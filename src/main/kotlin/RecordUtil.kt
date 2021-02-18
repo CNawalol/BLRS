@@ -2,23 +2,33 @@ import beans.DMMsgBean
 import beans.RoomInfoBean
 import beans.UrlBean
 import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.http.HttpHost
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
-import org.apache.http.impl.client.HttpClientBuilder
-import org.apache.http.util.ByteArrayBuffer
+import org.apache.http.impl.client.HttpClients
 import org.apache.http.util.EntityUtils
 import java.io.*
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
+import java.io.BufferedReader
+
+
+
+
+
+
 
 /**
  * @author awalol
  * @date 2021/2/16
  */
 object RecordUtil {
-    private val httpClient: HttpClient = HttpClientBuilder.create().build()
+    private val cm = PoolingHttpClientConnectionManager()
+    private val httpClient: HttpClient = HttpClients.custom().setProxy(HttpHost.create("127.0.0.1:7890")).setConnectionManager(cm).build()
 
     init {
-
+        cm.maxTotal = 200
+        cm.defaultMaxPerRoute = 20
     }
 
     fun getRoomInfo(rid: String): RoomInfoBean {
@@ -62,7 +72,7 @@ object RecordUtil {
         val tmp = ByteArray(DEFAULT_BUFFER_SIZE)
         while (httpResponse.entity.content.read(tmp).also { l = it } !== -1) {
             val bytes = ByteArray(l)
-            System.arraycopy(tmp, 0, bytes, 0, l);
+            System.arraycopy(tmp, 0, bytes, 0, l)
             dataOutputStream.write(bytes)
         }
         dataOutputStream.flush()
@@ -106,14 +116,45 @@ object RecordUtil {
         val fileWriter = FileWriter(file)
         videoPaths.forEach { action ->
             run {
-                fileWriter.append("file '$action'\n")
+                println("Start convert $action")
+                val outputPath = "${action.substring(0,action.length - 4)}.mp4"
+                println(outputPath)
+                val convertProcess = Runtime.getRuntime().exec("$ffmpegPath -y -i $action -c copy $outputPath")
+                /*val br = BufferedReader(InputStreamReader(convertProcess.errorStream))
+                var string : String?
+                //https://www.javaroad.cn/articles/3149
+                while (br.readLine().also { s -> string = s } != null) {
+                    println(string)
+                }*/
+                //Read stream Thread
+                Thread() {
+                    //https://www.javaroad.cn/articles/3149
+                    val br = BufferedReader(InputStreamReader(convertProcess.errorStream))
+                    var string : String?
+                    while (br.readLine().also { s -> string = s } != null) {
+                        println(string)
+                    }
+                }.start()
+
+                convertProcess.waitFor()
+                fileWriter.append("file '$outputPath'\n")
             }
         }
         fileWriter.flush()
         fileWriter.close()
-        val command = "$ffmpegPath -f concat -safe 0 -i ".plus(file.absolutePath).plus(" -c copy $outputFilePath")
-        println(command)
-        Runtime.getRuntime().exec(command)
+
+        //Video merge
+        val mergeCommand = "$ffmpegPath -y -f concat -safe 0 -i ".plus(file.absolutePath).plus(" -c copy $outputFilePath")
+        println(mergeCommand)
+        val mergeProcess = Runtime.getRuntime().exec(mergeCommand)
+        Thread() {
+            val br = BufferedReader(InputStreamReader(mergeProcess.errorStream))
+            var string : String?
+            while (br.readLine().also { s -> string = s } != null) {
+                println(string)
+            }
+        }.start()
+        mergeProcess.waitFor()
     }
 
     class FileDownloadThread(private var url : String,private var outfile : File) : Thread() {
