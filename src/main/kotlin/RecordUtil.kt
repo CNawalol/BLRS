@@ -24,7 +24,7 @@ import java.io.BufferedReader
  */
 object RecordUtil {
     private val cm = PoolingHttpClientConnectionManager()
-    private val httpClient: HttpClient = HttpClients.custom().setProxy(HttpHost.create("127.0.0.1:7890")).setConnectionManager(cm).build()
+    private val httpClient: HttpClient = HttpClients.custom().setConnectionManager(cm).build()
 
     init {
         cm.maxTotal = 200
