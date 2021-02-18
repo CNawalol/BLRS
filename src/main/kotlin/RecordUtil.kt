@@ -2,7 +2,6 @@ import beans.DMMsgBean
 import beans.RoomInfoBean
 import beans.UrlBean
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.apache.http.HttpHost
 import org.apache.http.HttpResponse
 import org.apache.http.client.HttpClient
 import org.apache.http.client.methods.HttpGet
@@ -11,12 +10,6 @@ import org.apache.http.util.EntityUtils
 import java.io.*
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager
 import java.io.BufferedReader
-
-
-
-
-
-
 
 /**
  * @author awalol
