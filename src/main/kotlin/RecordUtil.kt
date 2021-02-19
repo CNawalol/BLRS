@@ -24,6 +24,7 @@ object RecordUtil {
         cm.defaultMaxPerRoute = 20
     }
 
+    @JvmStatic
     fun getRoomInfo(rid: String): RoomInfoBean {
         val objectMapper = ObjectMapper()
         val httpResponse: HttpResponse = httpClient.execute(HttpGet("https://api.live.bilibili.com/xlive/web-room/v1/record/getInfoByLiveRecord?rid=".plus(rid)))
@@ -31,6 +32,7 @@ object RecordUtil {
         return objectMapper.readValue(httpContent, RoomInfoBean::class.java);
     }
 
+    @JvmStatic
     fun downloadRecord(rid: String) : ArrayList<String>{
         val videoPaths = ArrayList<String>()
         val objectMapper = ObjectMapper()
@@ -55,6 +57,7 @@ object RecordUtil {
         return videoPaths
     }
 
+    @JvmStatic
     fun fileDownload(url: String, file: File) : String{
         println(file.absolutePath + " | " + url)
         val httpResponse: HttpResponse = httpClient.execute(HttpGet(url))
@@ -73,6 +76,7 @@ object RecordUtil {
         return file.absolutePath //返回视频路径
     }
 
+    @JvmStatic
     fun dmDownload(rid : String){
         val roomInfo = getRoomInfo(rid)
         val totalIndex = roomInfo.data!!.dmInfo!!.num!!.plus(-1)
@@ -102,6 +106,7 @@ object RecordUtil {
         fileWriter.close()
     }
 
+    @JvmStatic
     fun ffmpegVideoMerge(videoPaths : List<String>,outputFilePath : String) {
         val ffmpegPath = System.getProperty("ffmpeg.path")
         val tempDir = System.getProperty("java.io.tmpdir")
