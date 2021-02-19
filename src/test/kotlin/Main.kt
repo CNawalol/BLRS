@@ -5,7 +5,7 @@ import java.io.File
  * @date 2021/2/16
  */
 fun main() {
-    val rid = "R1Lx411w7UJ"
+    val rid = "R1Ax411w7iA"
 //    println("hello/kakak/la.flv".replace(".flv",""))
 //    System.getProperties().forEach { entry -> println(entry) }
     System.setProperty("ffmpeg.path","D:\\Program Files (x86)\\FormatFactory\\ffmpeg.exe")
